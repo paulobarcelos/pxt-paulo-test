@@ -37,7 +37,7 @@ enum SBColors {
 /**
  * Custom blocks
  */
-//% weight=100 color="#f443b0" icon="\uf021" blockGap=8
+//% weight=100 color="#f443b0" icon="\u24C8" blockGap=8
 //% groups='["Positional", "Continuous", "Configuration"]'
 namespace strawbees {
     // LED Blocks
