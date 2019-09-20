@@ -1,17 +1,27 @@
 /**
- * Pre-Defined positions
+ * Neopixel ids
  */
-enum SBPositions {
-    //% block="left"
-    Left = 0,
-    //% block="right"
-    Right = 1
+enum SBNeopixelLabels {
+    //% block="A"
+    NeopixelA = 0,
+    //% block="B"
+    NeopixelB = 1
+}
+
+/**
+ * Servo ids
+ */
+enum SBServoLabels {
+    //% block="1"
+    Servo1 = 0,
+    //% block="2"
+    Servo2 = 1
 }
 
 /**
  * Pre-Defined colors
  */
-enum SBColors {
+enum SBColorLabels {
     //% block=red
     Red = 0xff0000,
     //% block=orange
@@ -38,10 +48,9 @@ enum SBColors {
  * Custom blocks
  */
 //% weight=100 color="#f443b0" icon="\u24C8" blockGap=8
-//% groups='["Positional", "Continuous", "Configuration"]'
 namespace strawbees {
     ////////////////////////////////////////////////////////////////////////////
-    // LEDs
+    // Neopixels
     ////////////////////////////////////////////////////////////////////////////
     let _neo: neopixel.Strip;
     /**
@@ -57,52 +66,73 @@ namespace strawbees {
     }
 
     /**
-     * Set LED to a given color (range 0-255 for r, g, b).
-     *
-     * @param ledId position of the LED (0 or 1)
-     * @param rgb RGB color of the LED
+     * Sets the color of an individual neopixel by specifying the amount of
+     * `red`, `green` and `blue` in the color. The amounts range from `0` to
+     * `100`.
+     * @param neopixelLabel Which neopixel to set the color.
+     * @param red Amount of red in color ranging from `0` to `100`.
+     * @param green Amount of green in color ranging from `0` to `100`.
+     * @param blue Amount of blue in color ranging from `0` to `100`.
      */
-    //% blockId="strawbees_neo_set_pixel_color" block="set LED %ledId=sb_positions|to %rgb=sb_colors"
-    //% weight=100
-    //% subcategory=LEDs
-    export function neoSetPixelColor(ledId: number, rgb: number): void {
-        neo().setPixelColor(ledId, rgb);
+    //% blockId="sb_setNeopixelColorRGB"
+    //% block="set neopixel %neopixelLabel to red %red green %green blue %blue"
+    //% neopixelLabel.shadow=sb_neopixel_labels
+    //% red.min=0 red.max=100 red.defl=100
+    //% green.min=0 green.max=100 green.defl=0
+    //% blue.min=0 blue.max=100 blue.defl=0
+    //% inlineInputMode=inline
+    export function setNeopixelColorRGB(neopixelLabel: number, red: number, green: number, blue: number): void {
+        neo().setPixelColor(neopixelLabel, getHexColorFromRGB(red, green, blue));
         neo().show();
     }
 
     /**
-     * Sets all LEDs to a given color (range 0-255 for r, g, b).
-     * @param rgb RGB color of the LED
-    */
-    //% blockId="strawbees_neo_set_color" block="set all LEDs to %rgb=sb_colors"
-    //% weight=99
-    //% subcategory=LEDs
-    export function neoSetColor(rgb: number) {
-        neo().showColor(rgb);
+     * Sets the color of an individual neopixel by specifying the amount of
+     * `hue`, `saturation` and `brightness` in the color. The amounts range from
+     * `0` to `100`.
+     * @param neopixelLabel Which neopixel to set the color.
+     * @param hue Hue of the color ranging from `0` to `100`.
+     * @param saturation Saturation of the color ranging from `0` to `100`.
+     * @param brightness Brightness of the color ranging from `0` to `100`.
+     */
+    //% blockId="sb_setNeopixelColorHSB"
+    //% block="set neopixel %neopixelLabel to hue %hue saturation %saturation brightness %brightness"
+    //% neopixelLabel.shadow=sb_neopixel_labels
+    //% hue.min=0 hue.max=100 hue.defl=0
+    //% saturation.min=0 saturation.max=100 saturation.defl=100
+    //% brightness.min=0 brightness.max=100 brightness.defl=100
+    //% inlineInputMode=inline
+    export function setNeopixelColorHSB(neopixelLabel: number, hue: number, saturation: number, brightness: number): void {
+        neo().setPixelColor(neopixelLabel, getHexColorFromHSB(hue, saturation, brightness));
         neo().show();
     }
 
     /**
-     * Clear all leds.
+     * Sets the color of an individual neopixel by specifying the color by name.
+     * @param neopixelLabel Which neopixel to set the color.
+     * @param colorLabel The name of the color from a list of color labels.
      */
-    //% blockId="strawbees_neo_clear" block="clear all LEDs"
-    //% weight=98
-    //% subcategory=LEDs
-    export function neoClear(): void {
-        neo().clear();
+    //% blockId="sb_setNeopixelColorLabel"
+    //% block="set neopixel %neopixelLabel to %colorLabel"
+    //% neopixelLabel.shadow=sb_neopixel_labels
+    //% colorLabel.shadow=sb_color_labels
+    //% inlineInputMode=inline
+    export function setNeopixelColorLabel(neopixelLabel: number, colorLabel: number): void {
+        neo().setPixelColor(neopixelLabel, colorLabel);
         neo().show();
     }
 
     /**
-     * Set the brightness of the LEDs
-     * @param brightness a measure of LED brightness in 0-255. eg: 40
+     * Sets the brightness of all the neopixels by specifying a value ranging
+     * from `0%` to `100%`.
+     * @param brightness Brightness of the neopixels from `0%` to `100%`.
      */
-    //% blockId="strawbees_neo_brightness" block="set all LEDs brightness to %brightness"
-    //% brightness.min=0 brightness.max=255
-    //% weight=97
-    //% subcategory=LEDs
-    export function neoBrightness(brightness: number): void {
-        neo().setBrightness(brightness);
+    //% blockId="sb_setNeopixelsBrightness"
+    //% block="set neopixels brightness to %brightness\\%"
+    //% brightness.min=0 brightness.max=100
+    //% advanced=true
+    export function setNeopixelsBrightness(brightness: number): void {
+        neo().setBrightness((brightness / 100) * 255);
         neo().show();
     }
 
@@ -111,163 +141,169 @@ namespace strawbees {
     ////////////////////////////////////////////////////////////////////////////
     class Servo extends servos.Servo {
         private _pin: AnalogPin;
-
         constructor(pin: AnalogPin) {
             super();
             this._pin = pin;
         }
-
         protected internalSetAngle(angle: number): number {
             pins.servoWritePin(this._pin, angle);
             return angle;
         }
-
         protected internalSetPulse(micros: number): void {
             pins.servoSetPulse(this._pin, micros);
         }
-
         protected internalStop() {
             pins.analogReadPin(this._pin);
             //pins.setPull(this._pin, PinPullMode.PullNone);
         }
     }
-    let _servoLeft: Servo;
-    let _servoRight: Servo;
+    let _servo1: Servo;
+    let _servo2: Servo;
     /**
      * Access (and create if needed) a servo instace.
-     * @param servoId the id of the servo. eg. SBPositions.Left
+     * @param id the id of the servo. eg. SBServoLabels.Left
      */
-    function servo(servoId: number): Servo {
-        switch (servoId) {
+    function servo(servoLabel: number): Servo {
+        switch (servoLabel) {
             case 0:
-                if (!_servoLeft) {
-                    _servoLeft = new Servo(AnalogPin.P13);
+                if (!_servo1) {
+                    _servo1 = new Servo(AnalogPin.P13);
                     pins.servoWritePin(AnalogPin.P13, 90);
                 }
-                return _servoLeft;
+                return _servo1;
             case 1:
-                if (!_servoRight) {
-                    _servoRight = new Servo(AnalogPin.P14);
+                if (!_servo2) {
+                    _servo2 = new Servo(AnalogPin.P14);
                     pins.servoWritePin(AnalogPin.P14, 90);
                 }
-                return _servoRight;
+                return _servo2;
         }
         return null;
     }
     /**
-     * Set the servo angle
+     * Sets the position of a servo by specifying the angle in degrees.
+     * @param servoLabel The servo to set the position to.
+     * @param degrees The angle to be set from `0` to `180` degrees.
      */
-    //% weight=80 help=servos/set-angle
-    //% subcategory=Servos
-    //% blockId=strawbees_servoservosetangle block="set servo %servoId=sb_positions|angle to %degrees=protractorPicker °"
-    //% degrees.defl=90
-    //% blockGap=8
-    //% parts=microservo trackArgs=0
-    //% group="Positional"
-    export function servoSetAngle(servoId: number, degrees: number): void {
-        servo(servoId).setAngle(degrees);
+    //% blockId=sb_setServoAngle block="set servo %servoLabel angle to %degrees°"
+    //% servoLabel.shadow=sb_servo_labels
+    //% degrees.shadow=protractorPicker
+    //% degrees.min=0 degrees.max=180 degrees.defl=90
+    export function setServoAngle(servoLabel: number, degrees: number): void {
+        servo(servoLabel).setAngle(degrees);
     }
 
     /**
-     * Set the throttle on a continuous servo
-     * @param speed the throttle of the motor from -100% to 100%
+     * Sets the speed of a continuous servo in a arbitrary range from `-100%` to
+     * `100%`.
+     * @param servoLabel The continuous servo to set the speed to.
+     * @param speed The speed from `-100%` to `100%`.
      */
-    //% blockId=strawbees_servoservorun block="continuous servo %servoId=sb_positions|run at %speed=speedPicker \\%"
-    //% subcategory=Servos
-    //% weight=79 help=servos/run
-    //% parts=microservo trackArgs=0
-    //% group="Continuous"
-    //% blockGap=8
-    export function servoRun(servoId: number, speed: number): void {
-        servo(servoId).run(speed);
+    //% blockId=sb_setContinuousServoSpeed block="set continuous servo %servoLabel speed to %speed\\%"
+    //% servoLabel.shadow=sb_servo_labels
+    //% speed.shadow=speedPicker
+    export function setContinuousServoSpeed(servoLabel: number, speed: number): void {
+        servo(servoLabel).run(speed);
     }
 
     /**
-     * Stop sending commands to the servo so that its rotation will stop at the current position.
+     * Turns a servo off so that no force will be applied and the horn can be 
+     * rotated manually. This saves battery.
+     * @param servoLabel The servo to turn off.
      */
-    // On a normal servo this will stop the servo where it is, rather than return it to neutral position.
-    // It will also not provide any holding force.
-    //% blockId=strawbees_servoservostop block="stop servo %servoId=sb_positions"
-    //% weight=78 help=servos/stop
-    //% subcategory=Servos
-    //% parts=microservo trackArgs=0
-    //% group="Continuous"
-    //% blockGap=8
-    export function servoStop(servoId: number) {
-        servo(servoId).stop();
+    //% blockId=sb_turnOffServo
+    //% block="turn off servo %servoLabel"
+    //% servoLabel.shadow=sb_servo_labels
+    export function turnOffServo(servoLabel: number) {
+        servo(servoLabel).stop();
     }
-
-    /**
-     * Set the possible rotation range angles for the servo between 0 and 180
-     * @param minAngle the minimum angle from 0 to 90
-     * @param maxAngle the maximum angle from 90 to 180
-     */
-    //% blockId=strawbees_servosetrange block="set servo %servoId=sb_positions|range from %minAngle to %maxAngle"
-    //% weight=77 help=servos/set-range
-    //% subcategory=Servos
-    //% minAngle.min=0 minAngle.max=90
-    //% maxAngle.min=90 maxAngle.max=180 maxAngle.defl=180
-    //% parts=microservo trackArgs=0
-    //% group="Configuration"
-    //% blockGap=8
-    export function servoSetRange(servoId: number, minAngle: number, maxAngle: number): void {
-        servo(servoId).setRange(minAngle, maxAngle);
-    }
-
-    /**
-     * Set a servo stop mode so it will stop when the rotation angle is in the neutral position, 90 degrees.
-     * @param on true to enable this mode
-     */
-    //% blockId=strawbees_servostoponneutral block="set servo %servoId=sb_positions|stop on neutral %enabled"
-    //% weight=76 help=servos/set-stop-on-neutral
-    //% subcategory=Servos
-    //% enabled.shadow=toggleOnOff
-    //% group="Configuration"
-    //% blockGap=8
-    export function servoSetStopOnNeutral(servoId: number, enabled: boolean): void {
-        servo(servoId).setStopOnNeutral(enabled);
-    }
-
     ////////////////////////////////////////////////////////////////////////////
     // More
     ////////////////////////////////////////////////////////////////////////////
+    /**
+     * A label of a neopixel
+     *
+     * @param label Neopixel ID
+     */
+    //% blockId="sb_neopixel_labels" block=%label
+    //% advanced=true
+    export function SBNeopixelLabels(label: SBNeopixelLabels): SBNeopixelLabels {
+        return label;
+    }
 
     /**
-     * Get numeric value of a color
+     * A label of a servo
+     *
+     * @param label Servo ID
+     */
+    //% blockId="sb_servo_labels" block=%label
+    //% advanced=true
+    export function SBServoLabels(label: SBServoLabels): SBServoLabels {
+        return label;
+    }
+
+    /**
+     * A label of a color
      *
      * @param color Standard RGB Led Colors
      */
-    //% blockId="sb_colors" block=%color
-    //% weight=55
+    //% blockId="sb_color_labels" block=%color
     //% advanced=true
-    export function SBColors(color: SBColors): number {
+    export function SBColorLabels(color: SBColorLabels): SBColorLabels {
         return color;
     }
 
     /**
-     * Get numeric value of a position
-     *
-     * @param position Standard position
+     * Calculates the hexadecimal representation of a color from the amounts of
+     * `red`, `green` and `blue` in that the color.
+     * @param red Amount of red in color ranging from `0` to `100`
+     * @param green Amount of green in color ranging from `0` to `100`
+     * @param blue Amount of blue in color ranging from `0` to `100`
      */
-    //% blockId="sb_positions" block=%position
-    //% weight=45
+    //% blockId="sb_getHexColorFromRGB"
+    //% block="red %red green %green blue %blue"
+    //% red.min=0 red.max=100 red.defl=0
+    //% green.min=0 green.max=100 green.defl=0
+    //% blue.min=0 blue.max=100 blue.defl=0
+    //% inlineInputMode=inline
     //% advanced=true
-    export function SBPositions(position: SBPositions): number {
-        return position;
+    export function getHexColorFromRGB(red: number, green: number, blue: number): number {
+        return ((((red / 100) * 255) & 0xFF) << 16) | ((((green / 100) * 255) & 0xFF) << 8) | (((blue / 100) * 255) & 0xFF);
     }
 
     /**
-     * Convert from RGB values to color number
-     *
-     * @param red Red value of the LED (0 to 255)
-     * @param green Green value of the LED (0 to 255)
-     * @param blue Blue value of the LED (0 to 255)
+     * Calculates the hexadecimal representation of a color from the `hue`, 
+     * `saturation` and `brightness` of that the color.
+     * @param hue Hue of the color ranging from `0` to `100`
+     * @param saturation Saturation of the color ranging from `0` to `100`
+     * @param brightness Brightness of the color ranging from `0` to `100`
      */
-    //% blockId="strawbees_convertRGB" block="convert from red %red| green %green| blue %blue"
-    //% weight=40
+    //% blockId="sb_getHexColorFromHSB"
+    //% block="hue %hue saturation %saturation brightness %brightness"
+    //% hue.min=0 hue.max=100
+    //% saturation.min=0 saturation.max=100
+    //% brightness.min=0 brightness.max=100
+    //% inlineInputMode=inline
     //% advanced=true
-    export function convertRGB(r: number, g: number, b: number): number {
-        return ((r & 0xFF) << 16) | ((g & 0xFF) << 8) | (b & 0xFF);
+    export function getHexColorFromHSB(hue: number, saturation: number, brightness: number): number {
+        let h, s, v, r, g, b, i, f, p, q, t;
+        h = hue / 100;
+        s = saturation / 100;
+        v = brightness / 100;
+        i = Math.floor(h * 6);
+        f = h * 6 - i;
+        p = v * (1 - s);
+        q = v * (1 - f * s);
+        t = v * (1 - (1 - f) * s);
+        switch (i % 6) {
+            case 0: r = v, g = t, b = p; break;
+            case 1: r = q, g = v, b = p; break;
+            case 2: r = p, g = v, b = t; break;
+            case 3: r = p, g = q, b = v; break;
+            case 4: r = t, g = p, b = v; break;
+            case 5: r = v, g = p, b = q; break;
+        }
+        return getHexColorFromRGB(r * 100, g * 100, b * 100);
     }
 
 }
